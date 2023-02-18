@@ -15,7 +15,7 @@
 
 <body>
 <div id="app">
-    <div class="container">
+    <div class="container">     
     <div class="mt-4">
         <!-- 產品Modal -->
         <user-product-modal :product-data="productData" ref="openModal" @add-cart="addCart"></user-product-modal>
@@ -33,24 +33,26 @@
         <tbody>
             <tr v-for="item in productData">
             <td style="width: 200px">
-                <div style="height: 100px; background-size: cover; background-position: center" :style="{backgroundImage: `url(https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_720/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/t9ur9cc1khkup1dmcbzd/%E8%BF%AA%E6%8B%9CIMG%E5%86%92%E9%9A%AA%E4%B8%96%E7%95%8C%E9%96%80%E7%A5%A8.jpg)`}"></div>
+                <div style="height: 100px; background-size: cover; background-position: center" :style="{backgroundImage: `url(${item.imageUrl})`}"></div>
             </td>
             <td>
                 {{ item.title }}
             </td>
             <td>
-                <div class="h5">{{ item.price}} 元</div>
-                <del class="h6">原價 {{ item.origin_price }} 元</del>
-                <div class="h5">現在只要 {{ item.price }} 元</div>
+                <div class="h5" v-if="!item.price">{{ item.price}} 元</div>
+                <div v-else>
+                    <del class="h6">原價 {{ item.origin_price }} 元</del>
+                    <div class="h5">現在只要 {{ item.price }} 元</div>
+                </div>
             </td>
             <td>
                 <div class="btn-group btn-group-sm">
                 <button type="button" class="btn btn-outline-secondary" @click="openModal(item.id)">
-                    <!-- <i class="fas fa-spinner fa-pulse"></i> -->
                     查看更多
                 </button>
-                <button type="button" class="btn btn-outline-danger" @click="addCart(item.id)">
-                    <!-- <i class="fas fa-spinner fa-pulse"></i> -->
+                <button type="button" class="btn btn-outline-danger" @click="addCart(item.id)" style="position:relative">
+                    <i class="fas fa-spinner fa-pulse" v-if="loadingStatus.loadingItem === item.id"></i>
+                    <loading v-model:active="isLoading" :is-full-page="fullPage"/></loading>
                     加到購物車
                 </button>
                 </div>
@@ -76,7 +78,6 @@
                     <tr v-for="item in productCart.carts" :key="item.id">
                         <td>
                         <button type="button" class="btn btn-outline-danger btn-sm" @click="deleteItem(item.id)">
-                            <!-- <i class="fas fa-spinner fa-pulse"></i> -->
                             x
                         </button>
                         </td>
@@ -89,7 +90,7 @@
                         <td>
                         <div class="input-group input-group-sm">
                             <div class="input-group mb-3">
-                            <input min="1" type="number" class="form-control" :value="item.qty" @change="editCart(item.id,$event.target.value )">
+                            <input min="1" type="number" class="form-control" :value="item.qty" @change="editCart(item,$event.target.value )">
                             <span class="input-group-text" id="basic-addon2">{{ item.product.unit }}</span>
                             </div>
                         </div>
@@ -115,24 +116,12 @@
     </div>
 
     
-<div class="my-5 row justify-content-center">
+<div class="my-5 row justify-content-center" v-if="!productCart.carts === []">
         <v-form ref="form" class="col-md-6" v-slot="{ errors }" >
-        <div>
-            <v-field
-                id="email"
-                name="email"
-                type="email"
-                class="form-control"
-                :class="{ 'is-invalid': errors['email'] }"
-                placeholder="請輸入 Email" rules="email|required"
-                v-model="user.email" 
-            ></v-field>
-            <error-message name="email" class="invalid-feedback"></error-message>
-        </div>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <v-field id="email" name="email" type="email" class="form-control"
-                    :class="{ 'is-invalid': errors['email'] }" placeholder="請輸入 Email" :rules="required"
+                    :class="{ 'is-invalid': errors['email'] }" placeholder="請輸入 Email" rules="email|required"
                     ></v-field>
             <error-message name="email" class="invalid-feedback"></error-message>
         </div>
@@ -146,8 +135,8 @@
 
         <div class="mb-3">
             <label for="tel" class="form-label">收件人電話</label>
-            <v-field id="tel" name="電話" type="text" class="form-control" :class="{ 'is-invalid': errors['電話'] }"
-                    placeholder="請輸入電話" ></v-field>
+            <v-field id="tel" name="電話" type="tel" class="form-control" :class="{ 'is-invalid': errors['電話'] }"
+                    placeholder="請輸入電話" rules="numeric|min:8|required" ></v-field>
             <error-message name="電話" class="invalid-feedback"></error-message>
         </div>
 
@@ -159,7 +148,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="message" class="form-label">留言留言</label>
+            <label for="message" class="form-label">留言</label>
             <textarea id="message" class="form-control" cols="30" rows="10" ></textarea>
         </div>
         <div class="text-end">

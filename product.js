@@ -21,7 +21,12 @@ const app = Vue.createApp({
         return{
             productData:[],
             productCart:[],
-            cartInput:""
+            cartInput:"",
+            user:{},
+            loadingStatus: {
+                loadingItem: '',
+            },
+            fullPage: false
         }
     },
     methods:{
@@ -35,6 +40,7 @@ const app = Vue.createApp({
         },
 
         addCart(id,qty = 1){
+            this.loadingStatus.loadingItem=id
             const data = {
                 "product_id": id,
                 "qty": qty
@@ -43,6 +49,7 @@ const app = Vue.createApp({
                 .post(`${baseUrl}/v2/api/${apiPath}/cart`,{data})
                 .then(res => {
                     console.log('已加入購物車')
+                    this.loadingStatus.loadingItem=""
                     this.getCart()
                 })
         },
@@ -59,14 +66,14 @@ const app = Vue.createApp({
                 })
         },
 
-        editCart(id,qty){
-            console.log(id,qty)
+        editCart(item,qty){
+            console.log(item)
             const data = {
-                "product_id": id,
+                "product_id": item.product_id,
                 "qty": qty
             }            
             axios
-                .put(`${baseUrl}/v2/api/${apiPath}/cart/${id}`,{data})
+                .put(`${baseUrl}/v2/api/${apiPath}/cart/${item.id}`,{data})
                 .then(res => {
                     console.log('已修改數量')
                     this.getCart()
@@ -95,17 +102,24 @@ const app = Vue.createApp({
                 })
         },
         submit(value){
-            console.log(value)
+            console.log(送出,value)
+            axios
+            .delete(`${baseUrl}/v2/api/${apiPath}/carts`)
+            .then(res => {
+                console.log("res")
+                this.getCart()
+            })
         }
-    },
+    },    
     mounted(){
         this.getProduct();
         this.getCart()
     }
 })
 
+
 app.component('userProductModal',userProductModal)
-app.component('Vform',VeeValidate.Form)
+app.component('VForm',VeeValidate.Form)
 app.component('VField',VeeValidate.Field)
 app.component('ErrorMessage',VeeValidate.ErrorMessage)
 app.mount("#app");
