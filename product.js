@@ -21,10 +21,19 @@ const app = Vue.createApp({
         return{
             productData:[],
             productCart:[],
-            cartInput:"",
-            user:{},
+            form:{
+                user:{
+                    name:'',
+                    email:'',
+                    tel:'',
+                    add:''
+                },
+                message:'',
+                cart:{}
+            },
             loadingStatus: {
                 loadingItem: '',
+                cartItem:''
             },
             fullPage: false
         }
@@ -49,7 +58,7 @@ const app = Vue.createApp({
                 .post(`${baseUrl}/v2/api/${apiPath}/cart`,{data})
                 .then(res => {
                     console.log('已加入購物車')
-                    this.loadingStatus.loadingItem=""
+                    this.loadingStatus.loadingItem=
                     this.getCart()
                 })
         },
@@ -68,6 +77,7 @@ const app = Vue.createApp({
 
         editCart(item,qty){
             console.log(item)
+            this.loadingStatus.cartItem = item.id
             const data = {
                 "product_id": item.product_id,
                 "qty": qty
@@ -76,6 +86,8 @@ const app = Vue.createApp({
                 .put(`${baseUrl}/v2/api/${apiPath}/cart/${item.id}`,{data})
                 .then(res => {
                     console.log('已修改數量')
+                    this.getCart()
+                    this.loadingStatus.cartItem = ""
                     this.getCart()
                 })
                 .catch(err => console.log(err))
@@ -101,14 +113,15 @@ const app = Vue.createApp({
                     this.getCart()
                 })
         },
-        submit(value){
-            console.log(送出,value)
+        submitCart(value){
             axios
-            .delete(`${baseUrl}/v2/api/${apiPath}/carts`)
-            .then(res => {
-                console.log("res")
-                this.getCart()
-            })
+                .post(`${baseUrl}/v2/api/${apiPath}/order`,{data:this.form})
+                .then(res => {
+                    console.log("res")
+                    this.getCart()
+                    alert('建立成功')
+                })
+                .catch(err => console.log(err))
         }
     },    
     mounted(){
