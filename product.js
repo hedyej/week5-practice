@@ -20,16 +20,17 @@ const app = Vue.createApp({
     data(){
         return{
             productData:[],
-            productCart:[],
+            productCart:{
+                carts: [],
+            },
             form:{
                 user:{
                     name:'',
                     email:'',
                     tel:'',
-                    add:''
+                    address:''
                 },
                 message:'',
-                cart:{}
             },
             loadingStatus: {
                 loadingItem: '',
@@ -44,8 +45,8 @@ const app = Vue.createApp({
                 .get(`${baseUrl}/v2/api/${apiPath}/products/all`)
                 .then(res => {
                     this.productData = res.data.products
-                    console.log("產品資料是" ,res.data.products)
                 })
+                .catch(err => console.log(err))
         },
 
         addCart(id,qty = 1){
@@ -57,10 +58,10 @@ const app = Vue.createApp({
             axios
                 .post(`${baseUrl}/v2/api/${apiPath}/cart`,{data})
                 .then(res => {
-                    console.log('已加入購物車')
-                    this.loadingStatus.loadingItem=
                     this.getCart()
+                    this.loadingStatus.loadingItem=""
                 })
+                .catch(err => console.log(err))
         },
 
         openModal(id){
@@ -71,22 +72,19 @@ const app = Vue.createApp({
             axios.get(`${baseUrl}/v2/api/${apiPath}/cart`)
                 .then(res => {
                     this.productCart = res.data.data;
-                    console.log("購物車的資料是", this.productCart)
                 })
+                .catch(err => console.log(err))
         },
 
         editCart(item,qty){
-            console.log(item)
             this.loadingStatus.cartItem = item.id
             const data = {
                 "product_id": item.product_id,
-                "qty": qty
+                "qty": Number(qty)
             }            
             axios
                 .put(`${baseUrl}/v2/api/${apiPath}/cart/${item.id}`,{data})
                 .then(res => {
-                    console.log('已修改數量')
-                    this.getCart()
                     this.loadingStatus.cartItem = ""
                     this.getCart()
                 })
@@ -94,14 +92,13 @@ const app = Vue.createApp({
         },
 
         deleteItem(id){
-            console.log(id)
             alert("確定要刪除嗎");
             axios
                 .delete(`${baseUrl}/v2/api/${apiPath}/cart/${id}`)
                 .then(res => {
-                    console.log(res)
                     this.getCart()
                 })
+                .catch(err => console.log(err))
         },
 
         deleteAll(){
@@ -109,15 +106,14 @@ const app = Vue.createApp({
             axios
                 .delete(`${baseUrl}/v2/api/${apiPath}/carts`)
                 .then(res => {
-                    console.log("res")
                     this.getCart()
                 })
+                .catch(err => console.log(err))
         },
         submitCart(value){
             axios
-                .post(`${baseUrl}/v2/api/${apiPath}/order`,{data:this.form})
+                .post(`${baseUrl}/v2/api/${apiPath}/order`,{"data":this.form})
                 .then(res => {
-                    console.log("res")
                     this.getCart()
                     alert('建立成功')
                 })

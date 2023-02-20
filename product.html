@@ -52,7 +52,6 @@
                 </button>
                 <button type="button" class="btn btn-outline-danger" @click="addCart(item.id)" style="position:relative" :disabled="loadingStatus.loadingItem === item.id">
                     <i class="fas fa-spinner fa-pulse" v-if="loadingStatus.loadingItem === item.id"></i>
-                    <loading v-model:active="isLoading" :is-full-page="fullPage"/></loading>
                     加到購物車
                 </button>
                 </div>
@@ -116,7 +115,7 @@
     </div>
 
     
-<div class="my-5 row justify-content-center">
+<div class="my-5 row justify-content-center" v-if="productCart.carts.length">
         <v-form ref="form" class="col-md-6" v-slot="{ errors }" >
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
@@ -143,7 +142,7 @@
         <div class="mb-3">
             <label for="address" class="form-label">收件人地址</label>
             <v-field id="address" name="地址" type="text" class="form-control" :class="{ 'is-invalid': errors['地址'] }"
-                    placeholder="請輸入地址" rules="required" v-model="form.user.add"></v-field>
+                    placeholder="請輸入地址" rules="required" v-model="form.user.address"></v-field>
             <error-message name="地址" class="invalid-feedback"></error-message>
         </div>
 
@@ -152,7 +151,7 @@
             <textarea id="message" class="form-control" cols="30" rows="10" v-model="form.message"></textarea>
         </div>
         <div class="text-end">
-            <button type="sumit" class="btn btn-danger" @click="submitCart"
+            <button type="button" class="btn btn-danger" @click="submitCart"
                     >送出訂單</button>
         </div> 
         </v-form>
@@ -168,7 +167,7 @@
 <div class="modal-content border-0">
     <div class="modal-header bg-dark text-white">
     <h5 class="modal-title" id="exampleModalLabel">
-        <span>{{  }}</span>
+        <span>{{ tempData.title }}</span>
     </h5>
     <button type="button" class="btn-close"
             data-bs-dismiss="modal" aria-label="Close"></button>
